@@ -303,6 +303,20 @@ class Cart
     }
 
     /**
+     * Set the content of the cart.
+     *
+     * @param \Illuminate\Support\Collection content
+     *
+     * @return \Gloudemans\Shoppingcart\Cart
+     */
+    public function setContent(Collection $content)
+    {
+        $this->session->put($this->instance, $content);
+
+        return $this;
+    }
+
+    /**
      * Get the total quantity of all CartItems in the cart.
      *
      * @return int|float
