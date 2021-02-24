@@ -98,9 +98,9 @@ class CartItem implements Arrayable, Jsonable
     /**
      * The buyable associated model.
      *
-     * @var Buyable
+     * @var Buyable|null
      */
-    public Buyable $buyable;
+    public $buyable;
 
     /**
      * CartItem constructor.
