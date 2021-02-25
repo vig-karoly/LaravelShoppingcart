@@ -73,6 +73,13 @@ class Cart
     private $taxRate = 0;
 
     /**
+     * Current content.
+     *
+     * @var Collection
+     */
+    private $content;
+
+    /**
      * Cart constructor.
      *
      * @param \Illuminate\Session\SessionManager      $session
@@ -83,6 +90,7 @@ class Cart
         $this->session = $session;
         $this->events = $events;
         $this->taxRate = config('cart.tax');
+        $this->content = new Collection();
 
         $this->instance(self::DEFAULT_INSTANCE);
     }
@@ -175,7 +183,8 @@ class Cart
             $this->events->dispatch('cart.adding', $item);
         }
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
 
         if ($dispatchEvent) {
             $this->events->dispatch('cart.added', $item);
@@ -233,7 +242,8 @@ class Cart
 
         $this->events->dispatch('cart.updating', $cartItem);
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
 
         $this->events->dispatch('cart.updated', $cartItem);
 
@@ -257,7 +267,8 @@ class Cart
 
         $this->events->dispatch('cart.removing', $cartItem);
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
 
         $this->events->dispatch('cart.removed', $cartItem);
     }
@@ -287,6 +298,7 @@ class Cart
      */
     public function destroy()
     {
+        $this->content->forget($this->currentInstance());
         $this->session->remove($this->instance);
     }
 
@@ -307,8 +319,8 @@ class Cart
     /**
      * Get the content of the cart. Save the cart when identifier is provided.
      *
+     * @param \Closure $callback
      * @param mixed $identifier
-     * @param \Closure $identifier
      *
      * @return \Illuminate\Support\Collection
      */
@@ -350,14 +362,12 @@ class Cart
             // Set relations.
             $this->setRelations($relations);
 
-            if ($count !== $content->count()) {
-                // Update cart content.
-                $this->setContent($content);
+            // Update cart content.
+            $this->setContent($content);
 
-                // Save the cart to database.
-                if (!is_null($identifier)) {
-                    $this->save($identifier);
-                }
+            // Save the cart to database.
+            if (!is_null($identifier)) {
+                $this->save($identifier);
             }
         }
 
@@ -373,9 +383,20 @@ class Cart
      */
     public function setContent(Collection $content)
     {
+        $this->content->put($this->currentInstance(), $content);
         $this->session->put($this->instance, $content);
 
         return $this;
+    }
+
+    /**
+     * Get the carts content.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCurrentContent()
+    {
+        return $this->content;
     }
 
     /**
@@ -615,7 +636,8 @@ class Cart
 
         $content->put($cartItem->rowId, $cartItem);
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
     }
 
     /**
@@ -636,7 +658,8 @@ class Cart
 
         $content->put($cartItem->rowId, $cartItem);
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
     }
 
     /**
@@ -675,7 +698,8 @@ class Cart
 
         $content->put($cartItem->rowId, $cartItem);
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
     }
 
     /**
@@ -766,10 +790,11 @@ class Cart
      * Restore the cart with the given identifier.
      *
      * @param mixed $identifier
+     * @param bool $delete
      *
      * @return void
      */
-    public function restore($identifier)
+    public function restore($identifier, $delete = true)
     {
         if ($identifier instanceof InstanceIdentifier) {
             $identifier = $identifier->getInstanceIdentifier();
@@ -796,14 +821,17 @@ class Cart
 
         $this->events->dispatch('cart.restored');
 
-        $this->session->put($this->instance, $content);
+        $this->setContent($content);
+        // $this->session->put($this->instance, $content);
 
         $this->instance($currentInstance);
 
         $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
 
-        $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $currentInstance])->delete();
+        if ($delete) {
+            $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $currentInstance])->delete();
+        }
     }
 
     /**
@@ -947,6 +975,10 @@ class Cart
      */
     protected function getContent()
     {
+        if ($this->content->has($this->currentInstance())) {
+            return $this->content->get($this->currentInstance());
+        }
+
         if ($this->session->has($this->instance)) {
             return $this->session->get($this->instance);
         }
