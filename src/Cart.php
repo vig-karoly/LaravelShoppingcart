@@ -351,9 +351,10 @@ class Cart
             $this->setRelations($relations);
 
             if ($count !== $content->count()) {
-                // Update cart content and relations.
+                // Update cart content.
                 $this->setContent($content);
 
+                // Save the cart to database.
                 if (!is_null($identifier)) {
                     $this->save($identifier);
                 }
