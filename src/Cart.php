@@ -4,12 +4,12 @@ namespace Gloudemans\Shoppingcart;
 
 use Carbon\Carbon;
 use Closure;
-use Gloudemans\Shoppingcart\Traits\HasRelationsTrait;
 use Gloudemans\Shoppingcart\Contracts\Buyable;
 use Gloudemans\Shoppingcart\Contracts\InstanceIdentifier;
 use Gloudemans\Shoppingcart\Exceptions\CartAlreadyStoredException;
 use Gloudemans\Shoppingcart\Exceptions\InvalidRowIDException;
 use Gloudemans\Shoppingcart\Exceptions\UnknownModelException;
+use Gloudemans\Shoppingcart\Traits\HasRelationsTrait;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Session\SessionManager;
@@ -18,7 +18,8 @@ use Illuminate\Support\Traits\Macroable;
 
 class Cart
 {
-    use Macroable, HasRelationsTrait;
+    use Macroable;
+    use HasRelationsTrait;
 
     const DEFAULT_INSTANCE = 'default';
 
