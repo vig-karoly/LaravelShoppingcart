@@ -364,11 +364,11 @@ class Cart
 
             // Update cart content.
             $this->setContent($content);
+        }
 
-            // Save the cart to database.
-            if (!is_null($identifier)) {
-                $this->save($identifier);
-            }
+        // Save the cart to database.
+        if (!is_null($identifier)) {
+            $this->save($identifier);
         }
 
         return $content;
@@ -852,7 +852,7 @@ class Cart
         $stored = $this->getConnection()->table($this->getTableName())
             ->where(['identifier'=> $identifier, 'instance' => $currentInstance])->first();
 
-        if (! $stored) {
+        if (!$stored) {
             return $this;
         }
 
