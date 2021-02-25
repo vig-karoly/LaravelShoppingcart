@@ -25,7 +25,7 @@ trait HasRelationsTrait
      * Get a specified relationship.
      *
      * @param string $relation
-     * 
+     *
      * @return mixed
      */
     public function getRelation($relation)
@@ -37,7 +37,7 @@ trait HasRelationsTrait
      * Determine if the given relation is loaded.
      *
      * @param string $key
-     * 
+     *
      * @return bool
      */
     public function relationLoaded($key)
@@ -50,7 +50,7 @@ trait HasRelationsTrait
      *
      * @param string $relation
      * @param mixed  $value
-     * 
+     *
      * @return $this
      */
     public function setRelation($relation, $value)
@@ -64,7 +64,7 @@ trait HasRelationsTrait
      * Unset a loaded relationship.
      *
      * @param string $relation
-     * 
+     *
      * @return $this
      */
     public function unsetRelation($relation)
@@ -78,7 +78,7 @@ trait HasRelationsTrait
      * Set the entire relations array on the model.
      *
      * @param array $relations
-     * 
+     *
      * @return $this
      */
     public function setRelations(array $relations)
