@@ -306,20 +306,20 @@ class Cart
     /**
      * Get the content of the cart.
      *
-     * @param callback $callback
+     * @param \Closure $callback
      *
      * @return \Illuminate\Support\Collection
      */
-    public function contentWithRelations(callback $callback)
+    public function contentWithRelations(Closure $callback)
     {
         $relations = $this->getRelations();
         $content = $this->getContent();
-        $count = $content->countItems();
+        $count = $content->count();
         $ids = $content->pluck('id');
 
         $items = null;
         if ($ids->count() > 0) {
-            $items = $callback($ids);
+            $items = $callback($ids->all());
         }
 
         if ($items) {
