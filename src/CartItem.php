@@ -96,13 +96,6 @@ class CartItem implements Arrayable, Jsonable
     private $discountRate = 0;
 
     /**
-     * The buyable associated model.
-     *
-     * @var Buyable|null
-     */
-    public $buyable;
-
-    /**
      * CartItem constructor.
      *
      * @param int|string $id
@@ -313,7 +306,6 @@ class CartItem implements Arrayable, Jsonable
      */
     public function updateFromBuyable(Buyable $item)
     {
-        $this->buyable = $item;
         $this->id = $item->getBuyableIdentifier($this->options);
         $this->name = $item->getBuyableDescription($this->options);
         $this->price = $item->getBuyablePrice($this->options);
@@ -428,7 +420,6 @@ class CartItem implements Arrayable, Jsonable
     public static function fromBuyable(Buyable $item, array $options = [])
     {
         $obj = new self($item->getBuyableIdentifier($options), $item->getBuyableDescription($options), $item->getBuyablePrice($options), $item->getBuyableWeight($options), $options);
-        $obj->buyable = $item;
 
         return $obj;
     }

@@ -4,6 +4,7 @@ namespace Gloudemans\Shoppingcart;
 
 use Carbon\Carbon;
 use Closure;
+use Gloudemans\Shoppingcart\Traits\HasRelationsTrait;
 use Gloudemans\Shoppingcart\Contracts\Buyable;
 use Gloudemans\Shoppingcart\Contracts\InstanceIdentifier;
 use Gloudemans\Shoppingcart\Exceptions\CartAlreadyStoredException;
@@ -17,7 +18,7 @@ use Illuminate\Support\Traits\Macroable;
 
 class Cart
 {
-    use Macroable;
+    use Macroable, HasRelationsTrait;
 
     const DEFAULT_INSTANCE = 'default';
 
@@ -819,6 +820,7 @@ class Cart
             $cartItem = CartItem::fromBuyable($id, $qty ?: []);
             $cartItem->setQuantity($name ?: 1);
             $cartItem->associate($id);
+            $this->setRelation($cartItem->rowId, $id);
         } elseif (is_array($id)) {
             $cartItem = CartItem::fromArray($id);
             $cartItem->setQuantity($id['qty']);
