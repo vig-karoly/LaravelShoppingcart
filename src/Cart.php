@@ -305,15 +305,16 @@ class Cart
     }
 
     /**
-     * Get the content of the cart.
+     * Get the content of the cart. Save the cart when identifier is provided.
      *
-     * @param \Closure $callback
+     * @param mixed $identifier
+     * @param \Closure $identifier
      *
      * @return \Illuminate\Support\Collection
      */
-    public function contentWithRelations(Closure $callback)
+    public function contentWithRelations(Closure $callback, $identifier = null)
     {
-        $relations = $this->getRelations();
+        $relations = [];
         $content = $this->getContent();
         $count = $content->count();
         $ids = $content->pluck('id');
@@ -352,6 +353,10 @@ class Cart
             if ($count !== $content->count()) {
                 // Update cart content and relations.
                 $this->setContent($content);
+
+                if (!is_null($identifier)) {
+                    $this->save($identifier);
+                }
             }
         }
 
@@ -725,6 +730,38 @@ class Cart
     }
 
     /**
+     * Store the current instance of the cart in the database.
+     *
+     * @param mixed $identifier
+     *
+     * @return \Gloudemans\Shoppingcart\Cart
+     */
+    public function save($identifier)
+    {
+        $content = $this->getContent();
+
+        if ($identifier instanceof InstanceIdentifier) {
+            $identifier = $identifier->getInstanceIdentifier();
+        }
+
+        $this->getConnection()->table($this->getTableName())->updateOrInsert(
+            [
+                'identifier' => $identifier,
+                'instance'   => $this->currentInstance(),
+            ],
+            [
+                'content'    => serialize($content),
+                'created_at' => $this->createdAt ?: Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]
+        );
+
+        $this->events->dispatch('cart.saved');
+
+        return $this;
+    }
+
+    /**
      * Restore the cart with the given identifier.
      *
      * @param mixed $identifier
@@ -769,6 +806,40 @@ class Cart
     }
 
     /**
+     * Restore the saved cart with the given identifier.
+     *
+     * @param mixed $identifier
+     *
+     * @return \Gloudemans\Shoppingcart\Cart
+     */
+    public function restoreSaved($identifier)
+    {
+        if ($identifier instanceof InstanceIdentifier) {
+            $identifier = $identifier->getInstanceIdentifier();
+        }
+
+        $currentInstance = $this->currentInstance();
+
+        $stored = $this->getConnection()->table($this->getTableName())
+            ->where(['identifier'=> $identifier, 'instance' => $currentInstance])->first();
+
+        if (! $stored) {
+            return $this;
+        }
+
+        $storedContent = unserialize(data_get($stored, 'content'));
+
+        $this->setContent($storedContent);
+
+        $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
+        $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
+
+        $this->events->dispatch('cart.restoredSaved');
+
+        return $this;
+    }
+
+    /**
      * Erase the cart with the given identifier.
      *
      * @param mixed $identifier
@@ -790,6 +861,31 @@ class Cart
         $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $instance])->delete();
 
         $this->events->dispatch('cart.erased');
+    }
+
+    /**
+     * Delete and Erase the cart with the given identifier.
+     *
+     * @param mixed $identifier
+     *
+     * @return \Gloudemans\Shoppingcart\Cart
+     */
+    public function destroyAndDelete($identifier)
+    {
+        $this->destroy();
+
+        if (!is_null($identifier)) {
+            if ($identifier instanceof InstanceIdentifier) {
+                $identifier = $identifier->getInstanceIdentifier();
+            }
+
+            // Do not need to check if exist to delete. Avoid 1 query to check if exists.
+            $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $this->currentInstance()])->delete();
+
+            $this->events->dispatch('cart.deleted');
+        }
+
+        return $this;
     }
 
     /**
