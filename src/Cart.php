@@ -304,6 +304,60 @@ class Cart
     }
 
     /**
+     * Get the content of the cart.
+     *
+     * @param callback $callback
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function contentWithRelations(callback $callback)
+    {
+        $relations = $this->getRelations();
+        $content = $this->getContent();
+        $count = $content->countItems();
+        $ids = $content->pluck('id');
+
+        $items = null;
+        if ($ids->count() > 0) {
+            $items = $callback($ids);
+        }
+
+        if ($items) {
+            $content->map(function (CartItem $cartItem) use ($items, &$relations) {
+                $item = $items->firstWhere('id', $cartItem->id);
+                if ($item) {
+                    $newCartItem = CartItem::fromBuyable($item);
+                    $newCartItem->setQuantity($cartItem->qty ?: 1);
+
+                    $relations[$newCartItem->rowId] = $item;
+
+                    return $newCartItem;
+                }
+
+                if (array_key_exists($cartItem->rowId, $relations)) {
+                    unset($relations[$cartItem->rowId]);
+                }
+
+                $cartItem->setQuantity(0);
+
+                return $cartItem;
+            })->reject(function (CartItem $cartItem) {
+                return $cartItem->qty <= 0;
+            });
+
+            // Set relations.
+            $this->setRelations($relations);
+
+            if ($count !== $content->count()) {
+                // Update cart content and relations.
+                $this->setContent($content);
+            }
+        }
+
+        return $content;
+    }
+
+    /**
      * Set the content of the cart.
      *
      * @param \Illuminate\Support\Collection content
