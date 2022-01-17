@@ -1013,6 +1013,8 @@ class Cart
             $cartItem->setQuantity($qty);
         }
 
+        $cartItem->setInstance($this->currentInstance());
+
         return $cartItem;
     }
 
