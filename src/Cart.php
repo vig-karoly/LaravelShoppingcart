@@ -320,7 +320,7 @@ class Cart
      * Get the content of the cart. Save the cart when identifier is provided.
      *
      * @param \Closure $callback
-     * @param mixed $identifier
+     * @param mixed    $identifier
      *
      * @return \Illuminate\Support\Collection
      */
@@ -790,7 +790,7 @@ class Cart
      * Restore the cart with the given identifier.
      *
      * @param mixed $identifier
-     * @param bool $delete
+     * @param bool  $delete
      *
      * @return void
      */
