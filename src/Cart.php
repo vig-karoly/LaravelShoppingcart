@@ -731,6 +731,7 @@ class Cart
      */
     public function store($identifier)
     {
+        dd(1);
         $content = $this->getContent();
 
         if ($identifier instanceof InstanceIdentifier) {
