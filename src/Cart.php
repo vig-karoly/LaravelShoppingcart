@@ -368,7 +368,7 @@ class Cart
 
         // Save the cart to database.
         if (!is_null($identifier)) {
-            $this->save($identifier);
+            $this->store($identifier);
         }
 
         return $content;
@@ -729,7 +729,7 @@ class Cart
      *
      * @return void
      */
-    public function store($identifier)
+    /*public function store($identifier)
     {
         dd(1);
         $content = $this->getContent();
@@ -753,7 +753,7 @@ class Cart
         ]);
 
         $this->events->dispatch('cart.stored');
-    }
+    }*/
 
     /**
      * Store the current instance of the cart in the database.
@@ -762,7 +762,7 @@ class Cart
      *
      * @return \Gloudemans\Shoppingcart\Cart
      */
-    public function save($identifier)
+    public function store($identifier)
     {
         $content = $this->getContent();
 
@@ -782,7 +782,7 @@ class Cart
             ]
         );
 
-        $this->events->dispatch('cart.saved');
+        $this->events->dispatch('cart.store');
 
         return $this;
     }
@@ -795,7 +795,7 @@ class Cart
      *
      * @return void
      */
-    public function restore($identifier, $delete = true)
+    /*public function restore($identifier, $delete = true)
     {
         if ($identifier instanceof InstanceIdentifier) {
             $identifier = $identifier->getInstanceIdentifier();
@@ -833,7 +833,7 @@ class Cart
         if ($delete) {
             $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $currentInstance])->delete();
         }
-    }
+    }*/
 
     /**
      * Restore the saved cart with the given identifier.
@@ -842,7 +842,7 @@ class Cart
      *
      * @return \Gloudemans\Shoppingcart\Cart
      */
-    public function restoreSaved($identifier)
+    public function restore($identifier)
     {
         if ($identifier instanceof InstanceIdentifier) {
             $identifier = $identifier->getInstanceIdentifier();
@@ -864,7 +864,7 @@ class Cart
         $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
 
-        $this->events->dispatch('cart.restoredSaved');
+        $this->events->dispatch('cart.restore');
 
         return $this;
     }
