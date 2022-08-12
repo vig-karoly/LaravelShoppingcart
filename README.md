@@ -789,6 +789,13 @@ Cart::add('1239ad0', 'Product 2', 2, 5.95, ['size' => 'large']);
     </td></tr>
 <tr>
     <td align="center">
+        <a href="https://github.com/vig-karoly">
+            <img src="https://avatars.githubusercontent.com/u/15194697?v=4" width="100;" alt="vig-karoly"/>
+            <br />
+            <sub><b>Vig Károly</b></sub>
+        </a>
+    </td>
+    <td align="center">
         <a href="https://github.com/ChrisThompsonTLDR">
             <img src="https://avatars.githubusercontent.com/u/348801?v=4" width="100;" alt="ChrisThompsonTLDR"/>
             <br />
@@ -822,15 +829,15 @@ Cart::add('1239ad0', 'Product 2', 2, 5.95, ['size' => 'large']);
             <br />
             <sub><b>Tiotobing</b></sub>
         </a>
-    </td>
+    </td></tr>
+<tr>
     <td align="center">
         <a href="https://github.com/Sartoric">
             <img src="https://avatars.githubusercontent.com/u/6607379?v=4" width="100;" alt="Sartoric"/>
             <br />
             <sub><b>Sartoric</b></sub>
         </a>
-    </td></tr>
-<tr>
+    </td>
     <td align="center">
         <a href="https://github.com/macbookandrew">
             <img src="https://avatars.githubusercontent.com/u/784333?v=4" width="100;" alt="macbookandrew"/>
@@ -864,13 +871,6 @@ Cart::add('1239ad0', 'Product 2', 2, 5.95, ['size' => 'large']);
             <img src="https://avatars.githubusercontent.com/u/7950376?v=4" width="100;" alt="jorgejavierleon"/>
             <br />
             <sub><b>Jorge Javier León</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/vig-karoly">
-            <img src="https://avatars.githubusercontent.com/u/15194697?v=4" width="100;" alt="vig-karoly"/>
-            <br />
-            <sub><b>Vig Károly</b></sub>
         </a>
     </td></tr>
 <tr>
