@@ -723,39 +723,6 @@ class Cart
     }
 
     /**
-     * Store an the current instance of the cart.
-     *
-     * @param mixed $identifier
-     *
-     * @return void
-     */
-    /*public function store($identifier)
-    {
-        dd(1);
-        $content = $this->getContent();
-
-        if ($identifier instanceof InstanceIdentifier) {
-            $identifier = $identifier->getInstanceIdentifier();
-        }
-
-        $instance = $this->currentInstance();
-
-        if ($this->storedCartInstanceWithIdentifierExists($instance, $identifier)) {
-            throw new CartAlreadyStoredException("A cart with identifier {$identifier} was already stored.");
-        }
-
-        $this->getConnection()->table($this->getTableName())->insert([
-            'identifier' => $identifier,
-            'instance'   => $instance,
-            'content'    => serialize($content),
-            'created_at' => $this->createdAt ?: Carbon::now(),
-            'updated_at' => Carbon::now(),
-        ]);
-
-        $this->events->dispatch('cart.stored');
-    }*/
-
-    /**
      * Store the current instance of the cart in the database.
      *
      * @param mixed $identifier
@@ -786,54 +753,6 @@ class Cart
 
         return $this;
     }
-
-    /**
-     * Restore the cart with the given identifier.
-     *
-     * @param mixed $identifier
-     * @param bool  $delete
-     *
-     * @return void
-     */
-    /*public function restore($identifier, $delete = true)
-    {
-        if ($identifier instanceof InstanceIdentifier) {
-            $identifier = $identifier->getInstanceIdentifier();
-        }
-
-        $currentInstance = $this->currentInstance();
-
-        if (!$this->storedCartInstanceWithIdentifierExists($currentInstance, $identifier)) {
-            return;
-        }
-
-        $stored = $this->getConnection()->table($this->getTableName())
-            ->where(['identifier'=> $identifier, 'instance' => $currentInstance])->first();
-
-        $storedContent = unserialize(data_get($stored, 'content'));
-
-        $this->instance(data_get($stored, 'instance'));
-
-        $content = $this->getContent();
-
-        foreach ($storedContent as $cartItem) {
-            $content->put($cartItem->rowId, $cartItem);
-        }
-
-        $this->events->dispatch('cart.restored');
-
-        $this->setContent($content);
-        // $this->session->put($this->instance, $content);
-
-        $this->instance($currentInstance);
-
-        $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
-        $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
-
-        if ($delete) {
-            $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $currentInstance])->delete();
-        }
-    }*/
 
     /**
      * Restore the saved cart with the given identifier.
@@ -930,6 +849,10 @@ class Cart
      */
     public function merge($identifier, $keepDiscount = false, $keepTax = false, $dispatchAdd = true, $instance = self::DEFAULT_INSTANCE)
     {
+        if ($identifier instanceof InstanceIdentifier) {
+            $identifier = $identifier->getInstanceIdentifier();
+        }
+
         if (!$this->storedCartInstanceWithIdentifierExists($instance, $identifier)) {
             return false;
         }
