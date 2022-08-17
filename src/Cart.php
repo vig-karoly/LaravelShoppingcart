@@ -340,7 +340,7 @@ class Cart
             $content->map(function (CartItem $cartItem) use ($items, &$relations) {
                 $item = $items->firstWhere('id', $cartItem->id);
                 if ($item) {
-                    $newCartItem = CartItem::fromBuyable($item);
+                    $newCartItem = CartItem::fromBuyable($item, $cartItem->options->toArray());
                     $newCartItem->setQuantity($cartItem->qty ?: 1);
 
                     $relations[$newCartItem->rowId] = $item;
