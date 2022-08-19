@@ -2,6 +2,7 @@
 
 namespace Gloudemans\Shoppingcart;
 
+use App\Facades\CountryFacade;
 use Carbon\Carbon;
 use Closure;
 use Gloudemans\Shoppingcart\Contracts\Buyable;
@@ -89,7 +90,7 @@ class Cart
     {
         $this->session = $session;
         $this->events = $events;
-        $this->taxRate = config('cart.tax');
+        $this->taxRate = CountryFacade::getCurrentCountryTax();
         $this->content = new Collection();
 
         $this->instance(self::DEFAULT_INSTANCE);
@@ -337,13 +338,18 @@ class Cart
         }
 
         if ($items) {
-            $content->map(function (CartItem $cartItem) use ($items, &$relations) {
+            $updatedContent = new Collection([]);
+            $content->map(function (CartItem $cartItem) use ($items, &$relations, $updatedContent) {
                 $item = $items->firstWhere('id', $cartItem->id);
                 if ($item) {
                     $newCartItem = CartItem::fromBuyable($item, $cartItem->options->toArray());
+                    $newCartItem->setDiscountRate($cartItem->getDiscountRate());
+
+                    //dd($newCartItem);
                     $newCartItem->setQuantity($cartItem->qty ?: 1);
 
                     $relations[$newCartItem->rowId] = $item;
+                    $updatedContent->put($newCartItem->rowId, $newCartItem);
 
                     return $newCartItem;
                 }
@@ -363,7 +369,7 @@ class Cart
             $this->setRelations($relations);
 
             // Update cart content.
-            $this->setContent($content);
+            $this->setContent($updatedContent);
         }
 
         // Save the cart to database.
@@ -371,7 +377,7 @@ class Cart
             $this->store($identifier);
         }
 
-        return $content;
+        return $updatedContent;
     }
 
     /**
