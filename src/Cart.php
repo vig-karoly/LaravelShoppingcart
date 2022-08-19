@@ -336,9 +336,9 @@ class Cart
         if ($ids->count() > 0) {
             $items = $callback($ids->all());
         }
+        $updatedContent = new Collection([]);
 
         if ($items) {
-            $updatedContent = new Collection([]);
             $content->map(function (CartItem $cartItem) use ($items, &$relations, $updatedContent) {
                 $item = $items->firstWhere('id', $cartItem->id);
                 if ($item) {
