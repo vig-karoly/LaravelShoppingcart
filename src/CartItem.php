@@ -2,6 +2,7 @@
 
 namespace Gloudemans\Shoppingcart;
 
+use App\Facades\CountryFacade;
 use Gloudemans\Shoppingcart\Calculation\DefaultCalculator;
 use Gloudemans\Shoppingcart\Contracts\Buyable;
 use Gloudemans\Shoppingcart\Contracts\Calculator;
@@ -94,6 +95,7 @@ class CartItem implements Arrayable, Jsonable
      * @var float
      */
     private $discountRate = 0;
+    private $subtotal = 0;
 
     /**
      * The cart instance of the cart item.
@@ -130,6 +132,7 @@ class CartItem implements Arrayable, Jsonable
         $this->name = $name;
         $this->price = floatval($price);
         $this->weight = floatval($weight);
+        $this->taxRate = CountryFacade::getCurrentCountryTax();
         $this->options = new CartItemOptions($options);
         $this->rowId = $this->generateRowId($id, $options);
     }
@@ -316,6 +319,7 @@ class CartItem implements Arrayable, Jsonable
         $this->id = $item->getBuyableIdentifier($this->options);
         $this->name = $item->getBuyableDescription($this->options);
         $this->price = $item->getBuyablePrice($this->options);
+        $this->type = $item->getBuyableType($this->options);
     }
 
     /**
@@ -379,6 +383,13 @@ class CartItem implements Arrayable, Jsonable
         return $this;
     }
 
+    public function setSubtotal($subtotal)
+    {
+        $this->subtotal = $subtotal;
+
+        return $this;
+    }
+
     /**
      * Set cart instance.
      *
@@ -412,12 +423,12 @@ class CartItem implements Arrayable, Jsonable
                 if (isset($this->associatedModel)) {
                     return with(new $this->associatedModel())->find($this->id);
                 }
-                // no break
+            // no break
             case 'modelFQCN':
                 if (isset($this->associatedModel)) {
                     return $this->associatedModel;
                 }
-                // no break
+            // no break
             case 'weightTotal':
                 return round($this->weight * $this->qty, $decimals);
         }

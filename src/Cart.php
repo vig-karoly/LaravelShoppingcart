@@ -3,6 +3,7 @@
 namespace Gloudemans\Shoppingcart;
 
 use App\Facades\CountryFacade;
+use App\Models\Currency;
 use Carbon\Carbon;
 use Closure;
 use Gloudemans\Shoppingcart\Contracts\Buyable;
@@ -79,6 +80,7 @@ class Cart
      * @var Collection
      */
     private $content;
+    private Currency $currency;
 
     /**
      * Cart constructor.
@@ -92,7 +94,7 @@ class Cart
         $this->events = $events;
         $this->taxRate = CountryFacade::getCurrentCountryTax();
         $this->content = new Collection();
-
+        $this->currency = CountryFacade::getCurrentCountryCurrency();
         $this->instance(self::DEFAULT_INSTANCE);
     }
 
@@ -345,7 +347,8 @@ class Cart
                     $newCartItem = CartItem::fromBuyable($item, $cartItem->options->toArray());
                     $newCartItem->setDiscountRate($cartItem->getDiscountRate());
 
-                    //dd($newCartItem);
+                    $newCartItem->setSubtotal(($newCartItem->price - $newCartItem->discount) / (1 + $this->taxRate/100) );
+
                     $newCartItem->setQuantity($cartItem->qty ?: 1);
 
                     $relations[$newCartItem->rowId] = $item;
@@ -452,6 +455,10 @@ class Cart
         return $this->numberFormat($this->totalFloat(), $decimals, $decimalPoint, $thousandSeperator);
     }
 
+    public function totalWithCurrency() {
+        return $this->currencyFormat($this->total());
+    }
+
     /**
      * Get the total tax of the items in the cart.
      *
@@ -478,6 +485,9 @@ class Cart
         return $this->numberFormat($this->taxFloat(), $decimals, $decimalPoint, $thousandSeperator);
     }
 
+    public function taxWithCurrency() {
+        return $this->currencyFormat($this->tax());
+    }
     /**
      * Get the subtotal (total - tax) of the items in the cart.
      *
@@ -502,6 +512,10 @@ class Cart
     public function subtotal($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->subtotalFloat(), $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    public function subTotalWithCurrency() {
+        return $this->currencyFormat($this->subtotal());
     }
 
     /**
@@ -530,6 +544,10 @@ class Cart
         return $this->numberFormat($this->discountFloat(), $decimals, $decimalPoint, $thousandSeperator);
     }
 
+    public function discountWithCurrency() {
+        return $this->currencyFormat($this->discount());
+    }
+
     /**
      * Get the price of the items in the cart (not rounded).
      *
@@ -556,6 +574,9 @@ class Cart
         return $this->numberFormat($this->initialFloat(), $decimals, $decimalPoint, $thousandSeperator);
     }
 
+    public function initialWithCurrency() {
+        return $this->currencyFormat($this->initial());
+    }
     /**
      * Get the price of the items in the cart (previously rounded).
      *
@@ -1019,7 +1040,7 @@ class Cart
     private function numberFormat($value, $decimals, $decimalPoint, $thousandSeperator)
     {
         if (is_null($decimals)) {
-            $decimals = config('cart.format.decimals', 2);
+            $decimals = $this->currency->decimals;
         }
 
         if (is_null($decimalPoint)) {
@@ -1031,6 +1052,15 @@ class Cart
         }
 
         return number_format($value, $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    private function currencyFormat($value)
+    {
+        if($this->currency->place === 'before') {
+            return $this->currency->symbol . ' ' . $value;
+        } else {
+            return $value . ' ' . $this->currency->symbol;
+        }
     }
 
     /**
