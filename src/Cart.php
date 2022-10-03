@@ -90,11 +90,12 @@ class Cart
      */
     public function __construct(SessionManager $session, Dispatcher $events)
     {
+        $currentCountry = CountryFacade::getCurrentCountry();
         $this->session = $session;
         $this->events = $events;
-        $this->taxRate = CountryFacade::getCurrentCountryTax();
+        $this->taxRate = $currentCountry->tax;
+        $this->currency = $currentCountry->currency;
         $this->content = new Collection();
-        $this->currency = CountryFacade::getCurrentCountryCurrency();
         $this->instance(self::DEFAULT_INSTANCE);
     }
 
@@ -437,7 +438,7 @@ class Cart
     public function totalFloat()
     {
         return $this->getContent()->reduce(function ($total, CartItem $cartItem) {
-            return $total + $cartItem->total;
+            return $total + $cartItem->total * $cartItem->qty;
         }, 0);
     }
 
@@ -467,7 +468,7 @@ class Cart
     public function taxFloat()
     {
         return $this->getContent()->reduce(function ($tax, CartItem $cartItem) {
-            return $tax + $cartItem->taxTotal;
+            return $tax + $cartItem->tax * $cartItem->qty;
         }, 0);
     }
 
@@ -496,7 +497,7 @@ class Cart
     public function subtotalFloat()
     {
         return $this->getContent()->reduce(function ($subTotal, CartItem $cartItem) {
-            return $subTotal + $cartItem->subtotal;
+            return $subTotal + $cartItem->subtotal * $cartItem->qty;
         }, 0);
     }
 
@@ -526,7 +527,7 @@ class Cart
     public function discountFloat()
     {
         return $this->getContent()->reduce(function ($discount, CartItem $cartItem) {
-            return $discount + $cartItem->discountTotal;
+            return $discount + $cartItem->discount * $cartItem->qty;
         }, 0);
     }
 
@@ -846,7 +847,7 @@ class Cart
      *
      * @return \Gloudemans\Shoppingcart\Cart
      */
-    public function destroyAndDelete($identifier)
+    public function destroyAndDelete($identifier = null)
     {
         $this->destroy();
 
