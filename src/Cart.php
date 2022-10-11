@@ -350,7 +350,7 @@ class Cart
 
                     $newCartItem->setSubtotal(($newCartItem->price - $newCartItem->discount) / (1 + $this->taxRate/100) );
 
-                    $newCartItem->setQuantity($cartItem->qty ?: 1);
+                    $newCartItem->setQuantity($cartItem->qty ? $cartItem->qty : 1);
 
                     $relations[$newCartItem->rowId] = $item;
                     $updatedContent->put($newCartItem->rowId, $newCartItem);
@@ -438,7 +438,7 @@ class Cart
     public function totalFloat()
     {
         return $this->getContent()->reduce(function ($total, CartItem $cartItem) {
-            return $total + $cartItem->total * $cartItem->qty;
+            return $total + $cartItem->total;
         }, 0);
     }
 
@@ -468,7 +468,7 @@ class Cart
     public function taxFloat()
     {
         return $this->getContent()->reduce(function ($tax, CartItem $cartItem) {
-            return $tax + $cartItem->tax * $cartItem->qty;
+            return $tax + $cartItem->taxTotal;
         }, 0);
     }
 
@@ -497,7 +497,7 @@ class Cart
     public function subtotalFloat()
     {
         return $this->getContent()->reduce(function ($subTotal, CartItem $cartItem) {
-            return $subTotal + $cartItem->subtotal * $cartItem->qty;
+            return $subTotal + $cartItem->subtotal;
         }, 0);
     }
 
@@ -527,7 +527,7 @@ class Cart
     public function discountFloat()
     {
         return $this->getContent()->reduce(function ($discount, CartItem $cartItem) {
-            return $discount + $cartItem->discount * $cartItem->qty;
+            return $discount + $cartItem->discountTotal;
         }, 0);
     }
 
@@ -602,6 +602,15 @@ class Cart
     public function priceTotal($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->priceTotalFloat(), $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    public function priceTotalDiscounted($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->priceTotalFloat()-$this->discountFloat(), $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    public function priceTotalDiscountedWithCurrency() {
+        return $this->currencyFormat($this->priceTotalDiscounted());
     }
 
     /**
@@ -847,7 +856,7 @@ class Cart
      *
      * @return \Gloudemans\Shoppingcart\Cart
      */
-    public function destroyAndDelete($identifier = null)
+    public function destroyAndDelete($identifier)
     {
         $this->destroy();
 

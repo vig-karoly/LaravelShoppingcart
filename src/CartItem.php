@@ -132,6 +132,8 @@ class CartItem implements Arrayable, Jsonable
         $this->name = $name;
         $this->price = floatval($price);
         $this->weight = floatval($weight);
+        $this->total = floatval($price);
+        $this->currency = CountryFacade::getCurrentCountryCurrency();
         $this->taxRate = CountryFacade::getCurrentCountryTax();
         $this->options = new CartItemOptions($options);
         $this->rowId = $this->generateRowId($id, $options);
@@ -165,6 +167,10 @@ class CartItem implements Arrayable, Jsonable
         return $this->numberFormat($this->price, $decimals, $decimalPoint, $thousandSeperator);
     }
 
+    public function priceWithCurrency($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->currencyFormat($this->price());
+    }
     /**
      * Returns the formatted price with discount applied.
      *
@@ -177,6 +183,11 @@ class CartItem implements Arrayable, Jsonable
     public function priceTarget($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->priceTarget, $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    public function priceTargetWithCurrency($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->currencyFormat($this->priceTarget());
     }
 
     /**
@@ -291,6 +302,20 @@ class CartItem implements Arrayable, Jsonable
     public function priceTotal($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->priceTotal, $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    public function priceTotalWithCurrency($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->currencyFormat($this->priceTotal());
+    }
+
+    private function currencyFormat($value)
+    {
+        if($this->currency->place === 'before') {
+            return $this->currency->symbol . ' ' . $value;
+        } else {
+            return $value . ' ' . $this->currency->symbol;
+        }
     }
 
     /**
@@ -548,7 +573,7 @@ class CartItem implements Arrayable, Jsonable
     private function numberFormat($value, $decimals, $decimalPoint, $thousandSeperator)
     {
         if (is_null($decimals)) {
-            $decimals = config('cart.format.decimals', 2);
+            $decimals = $this->currency->decimals;
         }
 
         if (is_null($decimalPoint)) {
