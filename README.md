@@ -760,17 +760,17 @@ Cart::add('1239ad0', 'Product 2', 2, 5.95, ['size' => 'large']);
         </a>
     </td>
     <td align="center">
-        <a href="https://github.com/rrpadilla">
-            <img src="https://avatars.githubusercontent.com/u/6921286?v=4" width="100;" alt="rrpadilla"/>
-            <br />
-            <sub><b>Rodolfo Ruiz</b></sub>
-        </a>
-    </td>
-    <td align="center">
         <a href="https://github.com/vig-karoly">
             <img src="https://avatars.githubusercontent.com/u/15194697?v=4" width="100;" alt="vig-karoly"/>
             <br />
             <sub><b>Vig Károly</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/rrpadilla">
+            <img src="https://avatars.githubusercontent.com/u/6921286?v=4" width="100;" alt="rrpadilla"/>
+            <br />
+            <sub><b>Rodolfo Ruiz</b></sub>
         </a>
     </td>
     <td align="center">
