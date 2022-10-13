@@ -62,13 +62,6 @@ class CartItem implements Arrayable, Jsonable
     public $price;
 
     /**
-     * The weight of the product.
-     *
-     * @var float
-     */
-    public $weight;
-
-    /**
      * The options for this cart item.
      *
      * @var CartItemOptions|array
@@ -110,10 +103,9 @@ class CartItem implements Arrayable, Jsonable
      * @param int|string $id
      * @param string     $name
      * @param float      $price
-     * @param float      $weight
      * @param array      $options
      */
-    public function __construct($id, $name, $price, $weight = 0, array $options = [])
+    public function __construct($id, $name, $price, array $options = [])
     {
         if (empty($id)) {
             throw new \InvalidArgumentException('Please supply a valid identifier.');
@@ -124,14 +116,10 @@ class CartItem implements Arrayable, Jsonable
         if (strlen($price) < 0 || !is_numeric($price)) {
             throw new \InvalidArgumentException('Please supply a valid price.');
         }
-        if (strlen($weight) < 0 || !is_numeric($weight)) {
-            throw new \InvalidArgumentException('Please supply a valid weight.');
-        }
 
         $this->id = $id;
         $this->name = $name;
         $this->price = floatval($price);
-        $this->weight = floatval($weight);
         $this->total = floatval($price);
         $this->currency = CountryFacade::getCurrentCountryCurrency();
         $this->taxRate = CountryFacade::getCurrentCountryTax();
@@ -139,19 +127,6 @@ class CartItem implements Arrayable, Jsonable
         $this->rowId = $this->generateRowId($id, $options);
     }
 
-    /**
-     * Returns the formatted weight.
-     *
-     * @param int    $decimals
-     * @param string $decimalPoint
-     * @param string $thousandSeperator
-     *
-     * @return string
-     */
-    public function weight($decimals = null, $decimalPoint = null, $thousandSeperator = null)
-    {
-        return $this->numberFormat($this->weight, $decimals, $decimalPoint, $thousandSeperator);
-    }
 
     /**
      * Returns the formatted price without TAX.
@@ -309,6 +284,28 @@ class CartItem implements Arrayable, Jsonable
         return $this->currencyFormat($this->priceTotal());
     }
 
+
+
+    /**
+     * Returns the formatted total price for this cart item.
+     *
+     * @param int    $decimals
+     * @param string $decimalPoint
+     * @param string $thousandSeperator
+     *
+     * @return string
+     */
+
+    public function priceTotalDiscounted($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->priceTotal-$this->discountTotal, $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    public function priceTotalDiscountedWithCurrency($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->currencyFormat($this->priceTotalDiscounted());
+    }
+
     private function currencyFormat($value)
     {
         if($this->currency->place === 'before') {
@@ -360,7 +357,6 @@ class CartItem implements Arrayable, Jsonable
         $this->qty = Arr::get($attributes, 'qty', $this->qty);
         $this->name = Arr::get($attributes, 'name', $this->name);
         $this->price = Arr::get($attributes, 'price', $this->price);
-        $this->weight = Arr::get($attributes, 'weight', $this->weight);
         $this->options = new CartItemOptions(Arr::get($attributes, 'options', $this->options));
 
         $this->rowId = $this->generateRowId($this->id, $this->options->all());
@@ -453,9 +449,6 @@ class CartItem implements Arrayable, Jsonable
                 if (isset($this->associatedModel)) {
                     return $this->associatedModel;
                 }
-            // no break
-            case 'weightTotal':
-                return round($this->weight * $this->qty, $decimals);
         }
 
         $class = new ReflectionClass(config('cart.calculator', DefaultCalculator::class));
@@ -476,7 +469,7 @@ class CartItem implements Arrayable, Jsonable
      */
     public static function fromBuyable(Buyable $item, array $options = [])
     {
-        $obj = new self($item->getBuyableIdentifier($options), $item->getBuyableDescription($options), $item->getBuyablePrice($options), $item->getBuyableWeight($options), $options);
+        $obj = new self($item->getBuyableIdentifier($options), $item->getBuyableDescription($options), $item->getBuyablePrice($options), $options);
 
         return $obj;
     }
@@ -492,7 +485,7 @@ class CartItem implements Arrayable, Jsonable
     {
         $options = Arr::get($attributes, 'options', []);
 
-        return new self($attributes['id'], $attributes['name'], $attributes['price'], $attributes['weight'], $options);
+        return new self($attributes['id'], $attributes['name'], $attributes['price'], $options);
     }
 
     /**
@@ -505,9 +498,9 @@ class CartItem implements Arrayable, Jsonable
      *
      * @return \Gloudemans\Shoppingcart\CartItem
      */
-    public static function fromAttributes($id, $name, $price, $weight, array $options = [])
+    public static function fromAttributes($id, $name, $price, array $options = [])
     {
-        return new self($id, $name, $price, $weight, $options);
+        return new self($id, $name, $price, $options);
     }
 
     /**
@@ -538,7 +531,6 @@ class CartItem implements Arrayable, Jsonable
             'name'     => $this->name,
             'qty'      => $this->qty,
             'price'    => $this->price,
-            'weight'   => $this->weight,
             'options'  => is_object($this->options)
                 ? $this->options->toArray()
                 : $this->options,
